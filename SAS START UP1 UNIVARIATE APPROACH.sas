@@ -1,0 +1,35 @@
+DATA ARTHR;
+INPUT VACGRP $ PAT MO1 MO2 MO3;
+DATALINES;
+ACT 101 6 3 0
+ACT 103 7 3 1
+ACT 104 4 1 2
+ACT 107 8 4 3
+PB0 102 6 5 5
+PBO 105 9 4 6
+PBO 106 5 3 4
+PBO 108 6 2 3;
+RUN;
+Proc sort data=ARTHR;
+by VACGRP PAT;
+RUN;
+Proc transpose data=ARTHR out=tra;
+by VACGRP PAT;
+Var MO1 MO2 MO3;
+RUN;
+
+data DISCOM;
+set tra;
+Score=col1;
+month=strip(_name_);
+visit=input(substr(month,3,1),best.);
+run;
+
+PROC GLM DATA=DISCOM;
+CLASS VACGRP PAT VISIT;
+MODEL SCORE = VACGRP PAT(VACGRP) VISIT VACGRP*VISIT/SS3;
+RANDOM PAT(VACGRP);
+TEST H=VACGRP E=PAT(VACGRP);
+TITLE3 'Univariate Approach';
+QUIT;
+RUN; 
